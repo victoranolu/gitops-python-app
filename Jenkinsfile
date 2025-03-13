@@ -45,6 +45,25 @@ pipeline {
                 }
             }
         }
+        stage('Update Deployment file'){
+            steps {
+                sh "cat deployment.yml"
+                sh "sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yml"
+                sh "cat deployment.yml"
+            }
+        }
+        stage('Push Changes to Git'){
+            steps {
+                sh """
+                git config --global user.name "victoranolu"
+                git config --global user.email "afactor05@gmail.com"
+                git add .
+                git commit -m 'Update deployment.yml version'"""
+                withCredentials([usernamePassword(credentialsId: 'github', passwordVariable: 'pass', usernameVariable: 'user')]) {
+                    sh "git push https://$user:$pass@github.com/victoranolu/gitops-python-app.git main"
+                }
+            }
+        }
     }
 }
 
